@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In &bull; App Sort Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+
+  <!-- Firebase v10 Compat SDK (Works across file://, localhost, and web servers) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <style>
+    :root {
+      --ink: #253047;
+      --muted: #66718a;
+      --outline: #dbe3ee;
+      --brand-blue: #174967;
+      --card-border: rgba(255, 255, 255, 0.9);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background: radial-gradient(circle at 8% 8%, #ffe3c9 0, transparent 29%),
+                  radial-gradient(circle at 92% 24%, #d9e9ff 0, transparent 34%),
+                  #f6f5f1;
+    }
+    .headline { font-family: "Fraunces", serif; letter-spacing: -0.04em; }
+    .auth-card {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      box-shadow: 0 16px 0 -8px rgba(54, 73, 100, 0.10), 0 24px 45px -26px rgba(35, 50, 70, 0.28);
+    }
+    .input-box {
+      width: 100%;
+      border: 2px solid #e5e9ef;
+      border-radius: 16px;
+      padding: 13px 18px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--ink);
+      background: #fafbfc;
+      transition: all 0.2s;
+    }
+    .input-box:focus {
+      outline: none;
+      border-color: #213b8a;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(33, 59, 138, 0.12);
+    }
+    .btn-primary {
+      background: #253047;
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 14px 22px;
+      font-weight: 700;
+      font-size: 17px;
+      box-shadow: 0 5px 0 #121b2d;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #121b2d;
+      background: #1e283d;
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #121b2d;
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--ink);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 13px 20px;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 4px 0 #d9e1ec;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #d9e1ec;
+      background: #fcfdfe;
+    }
+    .btn-secondary:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #d9e1ec;
+    }
+    .btn-tab {
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .btn-tab.active {
+      background: #253047;
+      color: #ffffff;
+      box-shadow: 0 3px 0 #121b2d;
+    }
+    .avatar-pill {
+      font-size: 26px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      background: #f1f4f8;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .avatar-pill:hover {
+      transform: scale(1.1);
+    }
+    .avatar-pill.selected {
+      border-color: #213b8a;
+      background: #dcebf5;
+      transform: scale(1.1);
+    }
+    .badge-pastel {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Top bar -->
+  <header class="w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+    <a href="Sort_Game.html" class="flex items-center gap-2 text-ink font-bold text-sm sm:text-base hover:opacity-80 transition">
+      <span class="w-9 h-9 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-lg">🧩</span>
+      <span>App Sort Challenge</span>
+    </a>
+    <a href="Sort_Game.html" class="inline-flex items-center gap-2 text-muted hover:text-ink font-semibold text-sm transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Back to Game</span>
+    </a>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md">
+
+      <!-- Active User Banner (if already logged in) -->
+      <div id="already-logged-in-banner" class="hidden auth-card p-6 mb-6 text-center">
+        <div id="logged-user-avatar" class="text-4xl mb-2">🚀</div>
+        <h2 class="text-xl font-extrabold text-[#253047] mb-1">Already Signed In!</h2>
+        <p class="text-sm text-muted mb-4">You are currently logged in as <strong id="logged-user-name" class="text-ink">Player</strong>.</p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="Sort_Game.html" class="btn-primary flex-1 text-center py-3">Play Game</a>
+          <a href="profile.html" class="btn-secondary flex-1 text-center py-3">View Profile</a>
+        </div>
+        <button id="banner-signout-btn" type="button" class="mt-4 text-xs font-bold text-rose-600 hover:underline">
+          Sign out of this account
+        </button>
+      </div>
+
+      <!-- Auth Card -->
+      <div id="auth-main-card" class="auth-card p-7 sm:p-9">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+          <p class="text-[12px] font-extrabold tracking-widest uppercase text-[#b35137] mb-1">WELCOME TO THE ARENA</p>
+          <h1 id="form-heading" class="headline text-3xl font-extrabold text-[#253047]">Sign In to Play</h1>
+          <p id="form-subheading" class="text-sm text-muted mt-1 font-medium">Keep your sorting stats, badges and high scores synced.</p>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="flex p-1 mb-6 rounded-2xl bg-slate-100 border border-slate-200">
+          <button id="tab-signin" type="button" class="btn-tab active flex-1">Sign In</button>
+          <button id="tab-signup" type="button" class="btn-tab flex-1">Create Account</button>
+        </div>
+
+        <!-- Notification / Error Box -->
+        <div id="status-banner" class="hidden mb-5 p-3.5 rounded-2xl text-sm font-semibold flex items-start gap-2.5">
+          <i id="status-icon" data-lucide="info" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+          <span id="status-text">Message</span>
+        </div>
+
+        <!-- SIGN IN FORM -->
+        <form id="signin-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-extrabold tracking-wider uppercase text-muted mb-1.5" for="signin-email">Email Address</label>
+            <input type="email" id="signin-email" class="input-box" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-extrabold tracking-wider uppercase text-muted" for="signin-password">Password</label>
+              <button id="open-forgot-modal" type="button" class="text-xs font-bold text-[#174967] hover:underline">Forgot?</button>
+            </div>
+            <div class="relative">
+              <input type="password" id="signin-password" class="input-box pr-11" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink p-1">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" id="btn-submit-signin" class="btn-primary w-full mt-2 flex items-center justify-center gap-2">
+            <span>Sign In</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- SIGN UP FORM (Initially Hidden) -->
+        <form id="signup-form" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-extrabold tracking-wider uppercase text-muted mb-1.5" for="signup-name">Your Sorter Name</label>
+            <input type="text" id="signup-name" class="input-box" placeholder="e.g. MasterSorter, Sarah P." required autocomplete="name">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold tracking-wider uppercase text-muted mb-1.5">Choose Your Avatar</label>
+            <div id="avatar-grid" class="flex flex-wrap gap-2 pt-1">
+              <!-- Dynamically populated avatar pills -->
+            </div>
+            <input type="hidden" id="signup-avatar" value="🚀">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold tracking-wider uppercase text-muted mb-1.5" for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" class="input-box" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold tracking-wider uppercase text-muted mb-1.5" for="signup-password">Password (min 6 chars)</label>
+            <div class="relative">
+              <input type="password" id="signup-password" class="input-box pr-11" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+              <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ink p-1">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" id="btn-submit-signup" class="btn-primary w-full mt-2 flex items-center justify-center gap-2">
+            <span>Create Free Account</span>
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+          <div class="relative flex justify-center text-xs uppercase font-extrabold tracking-wider text-muted">
+            <span class="bg-white px-3">or continue with</span>
+          </div>
+        </div>
+
+        <!-- Social & Instant Play Options -->
+        <div class="space-y-3">
+          <!-- Google Sign-In -->
+          <button type="button" id="btn-google-signin" class="btn-secondary w-full flex items-center justify-center gap-3">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+          <!-- Guest Mode -->
+          <button type="button" id="btn-guest-signin" class="btn-secondary w-full flex items-center justify-center gap-2 bg-[#f6f5f1] hover:bg-[#edf0f5]">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#785019]"></i>
+            <span>Play Instantly as Guest</span>
+          </button>
+        </div>
+
+        <!-- Mode notification note -->
+        <p class="text-center text-[12px] text-muted mt-6">
+          🔒 Secured by Firebase Auth &bull; 
+          <span class="text-emerald-700 font-semibold" id="cloud-mode-tag">Cloud & Offline Supported</span>
+        </p>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- PASSWORD RESET MODAL -->
+  <div id="forgot-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#253047]/40 backdrop-blur-sm hidden" role="dialog" aria-modal="true">
+    <div class="auth-card w-full max-w-sm p-6 sm:p-7 relative animate-fade-in">
+      <button id="close-forgot-modal" type="button" class="absolute top-4 right-4 text-muted hover:text-ink p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-[#dcebf5] text-[#174967] flex items-center justify-center mb-2">
+          <i data-lucide="key-round" class="w-6 h-6"></i>
+        </div>
+        <h3 class="headline text-2xl font-bold text-ink">Reset Password</h3>
+        <p class="text-xs text-muted mt-1">Enter your email and we'll send you a recovery link.</p>
+      </div>
+      <form id="forgot-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-muted mb-1" for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" class="input-box" placeholder="you@example.com" required>
+        </div>
+        <button type="submit" id="btn-submit-forgot" class="btn-primary w-full">Send Reset Link</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="w-full text-center py-5 text-xs text-muted font-medium">
+    &copy; 2026 App Sort Challenge &bull; Built with HTML, Tailwind & Firebase
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // DOM Elements
+    const tabSignIn = document.getElementById("tab-signin");
+    const tabSignUp = document.getElementById("tab-signup");
+    const formSignIn = document.getElementById("signin-form");
+    const formSignUp = document.getElementById("signup-form");
+    const heading = document.getElementById("form-heading");
+    const subheading = document.getElementById("form-subheading");
+    const statusBanner = document.getElementById("status-banner");
+    const statusText = document.getElementById("status-text");
+    const statusIcon = document.getElementById("status-icon");
+    const avatarGrid = document.getElementById("avatar-grid");
+    const signupAvatar = document.getElementById("signup-avatar");
+    const btnGoogle = document.getElementById("btn-google-signin");
+    const btnGuest = document.getElementById("btn-guest-signin");
+    const forgotModal = document.getElementById("forgot-modal");
+    const openForgotBtn = document.getElementById("open-forgot-modal");
+    const closeForgotBtn = document.getElementById("close-forgot-modal");
+    const forgotForm = document.getElementById("forgot-form");
+    const alreadyLoggedInBanner = document.getElementById("already-logged-in-banner");
+    const authMainCard = document.getElementById("auth-main-card");
+    const bannerSignOutBtn = document.getElementById("banner-signout-btn");
+
+    // Render Avatars for signup selection
+    const avatars = window.DEFAULT_AVATARS || ["🚀", "💡", "🎮", "🌿", "📚", "🎧", "🎨", "⚡"];
+    avatarGrid.innerHTML = avatars.map((av, idx) => `
+      <button type="button" class="avatar-pill ${idx === 0 ? 'selected' : ''}" data-avatar="${av}">
+        ${av}
+      </button>
+    `).join("");
+
+    avatarGrid.addEventListener("click", (e) => {
+      const btn = e.target.closest(".avatar-pill");
+      if (!btn) return;
+      document.querySelectorAll(".avatar-pill").forEach(p => p.classList.remove("selected"));
+      btn.classList.add("selected");
+      signupAvatar.value = btn.dataset.avatar;
+    });
+
+    // Toggle Password Visibility
+    document.querySelectorAll(".toggle-password").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const input = btn.previousElementSibling;
+        if (input.type === "password") {
+          input.type = "text";
+          btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+        } else {
+          input.type = "password";
+          btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+        }
+        lucide.createIcons();
+      });
+    });
+
+    // Tab Switching
+    function setMode(mode) {
+      clearStatus();
+      if (mode === "signin") {
+        tabSignIn.classList.add("active");
+        tabSignUp.classList.remove("active");
+        formSignIn.classList.remove("hidden");
+        formSignUp.classList.add("hidden");
+        heading.textContent = "Sign In to Play";
+        subheading.textContent = "Keep your sorting stats, badges and high scores synced.";
+      } else {
+        tabSignUp.classList.add("active");
+        tabSignIn.classList.remove("active");
+        formSignUp.classList.remove("hidden");
+        formSignIn.classList.add("hidden");
+        heading.textContent = "Create Account";
+        subheading.textContent = "Join the challenge, customize your avatar and climb the ranks.";
+      }
+    }
+
+    tabSignIn.addEventListener("click", () => setMode("signin"));
+    tabSignUp.addEventListener("click", () => setMode("signup"));
+
+    // Status Message Helper
+    function showStatus(message, isError = false) {
+      statusBanner.classList.remove("hidden", "bg-rose-50", "text-rose-700", "border-rose-200", "bg-emerald-50", "text-emerald-800", "border-emerald-200");
+      if (isError) {
+        statusBanner.classList.add("bg-rose-50", "text-rose-700", "border", "border-rose-200");
+        statusIcon.setAttribute("data-lucide", "alert-circle");
+      } else {
+        statusBanner.classList.add("bg-emerald-50", "text-emerald-800", "border", "border-emerald-200");
+        statusIcon.setAttribute("data-lucide", "check-circle-2");
+      }
+      statusText.textContent = message;
+      lucide.createIcons();
+    }
+
+    function clearStatus() {
+      statusBanner.classList.add("hidden");
+    }
+
+    // Auth State Observer
+    AppSorterAuth.onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById("logged-user-avatar").textContent = user.photoURL || "🚀";
+        document.getElementById("logged-user-name").textContent = user.displayName || user.email || "Sorter";
+        alreadyLoggedInBanner.classList.remove("hidden");
+        authMainCard.classList.add("hidden");
+      } else {
+        alreadyLoggedInBanner.classList.add("hidden");
+        authMainCard.classList.remove("hidden");
+      }
+    });
+
+    bannerSignOutBtn.addEventListener("click", async () => {
+      await AppSorterAuth.signOut();
+      showStatus("You have been signed out.", false);
+    });
+
+    // Sign In Submission
+    formSignIn.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearStatus();
+      const email = document.getElementById("signin-email").value.trim();
+      const password = document.getElementById("signin-password").value;
+      const btn = document.getElementById("btn-submit-signin");
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin mr-2">⏳</span> Signing in...`;
+        await AppSorterAuth.signInWithEmail(email, password);
+        showStatus("Signed in successfully! Redirecting to game...", false);
+        setTimeout(() => { window.location.href = "Sort_Game.html"; }, 900);
+      } catch (err) {
+        showStatus(err.message || "Failed to sign in. Please verify your credentials.", true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Sign In</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      }
+    });
+
+    // Sign Up Submission
+    formSignUp.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearStatus();
+      const name = document.getElementById("signup-name").value.trim();
+      const avatar = signupAvatar.value;
+      const email = document.getElementById("signup-email").value.trim();
+      const password = document.getElementById("signup-password").value;
+      const btn = document.getElementById("btn-submit-signup");
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin mr-2">⏳</span> Creating account...`;
+        await AppSorterAuth.signUpWithEmail(email, password, name, avatar);
+        showStatus("Account created! Redirecting to your profile...", false);
+        setTimeout(() => { window.location.href = "profile.html"; }, 900);
+      } catch (err) {
+        showStatus(err.message || "Account creation failed.", true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Create Free Account</span><i data-lucide="user-plus" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      }
+    });
+
+    // Google Sign-In
+    btnGoogle.addEventListener("click", async () => {
+      clearStatus();
+      try {
+        btnGoogle.disabled = true;
+        await AppSorterAuth.signInWithGoogle();
+        showStatus("Google authentication successful! Redirecting...", false);
+        setTimeout(() => { window.location.href = "Sort_Game.html"; }, 900);
+      } catch (err) {
+        showStatus(err.message || "Google sign-in was cancelled or encountered an error.", true);
+      } finally {
+        btnGoogle.disabled = false;
+      }
+    });
+
+    // Guest Play
+    btnGuest.addEventListener("click", async () => {
+      clearStatus();
+      try {
+        btnGuest.disabled = true;
+        await AppSorterAuth.signInAsGuest();
+        showStatus("Welcome Guest Sorter! Taking you to the game...", false);
+        setTimeout(() => { window.location.href = "Sort_Game.html"; }, 700);
+      } catch (err) {
+        showStatus(err.message || "Could not start guest session.", true);
+      } finally {
+        btnGuest.disabled = false;
+      }
+    });
+
+    // Forgot Password Modal
+    openForgotBtn.addEventListener("click", () => forgotModal.classList.remove("hidden"));
+    closeForgotBtn.addEventListener("click", () => forgotModal.classList.add("hidden"));
+    forgotModal.addEventListener("click", (e) => {
+      if (e.target === forgotModal) forgotModal.classList.add("hidden");
+    });
+
+    forgotForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("forgot-email").value.trim();
+      const btn = document.getElementById("btn-submit-forgot");
+      try {
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+        await AppSorterAuth.sendPasswordReset(email);
+        forgotModal.classList.add("hidden");
+        showStatus(`Password reset link sent to ${email}. Check your inbox!`, false);
+        forgotForm.reset();
+      } catch (err) {
+        alert(err.message || "Failed to send reset email.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Send Reset Link";
+      }
+    });
+  </script>
+</body>
+</html>
