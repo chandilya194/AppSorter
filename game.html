@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps for Fun and Games - Activity</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="gameScreen" style="display:block;">
+<header class="topbar">
+    <div class="brand"><span class="brand-icon">🏃🏻‍♂️🏆</span><span>Apps for Fun and Games</span></div>
+    <div class="stats">
+      <div class="stat"><span>◷</span><small>TIME</small><b id="timer">00:00</b></div>
+      <div class="stat"><span>🏆</span><small>SCORE</small><b id="score">0</b></div>
+      <button class="sound-btn" id="soundBtn" title="Toggle sound">🔊</button>
+      <button class="restart-btn" id="restartBtn" title="Restart">↻</button>
+      <button class="restart-btn" id="fullscreenBtn" title="Fullscreen">⛶</button>
+      <button class="help-btn" id="helpBtn" title="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="game-shell">
+    <div class="level-dots"><i class="active"></i><i></i><i></i></div>
+    <section class="instruction">
+      <h1>Sort the apps into the right category!</h1>
+      <p>(Hint: Tap or drag an app card into Fun, Learn, Create, or Talk!)</p>
+    </section>
+
+    <section class="categories" aria-label="App categories">
+      <div class="category fun" data-category="Fun" tabindex="0">
+        <div class="cat-copy"><span class="cat-symbol">★</span><strong>Fun</strong></div>
+        <img class="avatar" src="assets/avatar-1.png" alt="Child playing with a toy">
+        <span class="drop-hint">DROP HERE</span>
+      </div>
+      <div class="category learn" data-category="Learn" tabindex="0">
+        <div class="cat-copy"><span class="cat-symbol">▣</span><strong>Learn</strong></div>
+        <img class="avatar" src="assets/avatar-2.png" alt="Child reading a book">
+        <span class="drop-hint">DROP HERE</span>
+      </div>
+      <div class="category create" data-category="Create" tabindex="0">
+        <div class="cat-copy"><span class="cat-symbol">♧</span><strong>Create</strong></div>
+        <img class="avatar" src="assets/avatar-3.png" alt="Child painting">
+        <span class="drop-hint">DROP HERE</span>
+      </div>
+      <div class="category talk" data-category="Talk" tabindex="0">
+        <div class="cat-copy"><span class="cat-symbol">▢</span><strong>Talk</strong></div>
+        <img class="avatar" src="assets/avatar-4.png" alt="Two children talking">
+        <span class="drop-hint">DROP HERE</span>
+      </div>
+    </section>
+
+    <section class="activity-area">
+      <div class="tray" id="tray" aria-label="Apps to sort"></div>
+      <div class="bottom-panel">
+        <span class="panel-label">ACTIVITIES TO SORT</span>
+        <span class="pick-label" id="pickLabel">Pick an app</span>
+        <span class="panel-divider"></span>
+        <div class="wave-status">WAVE <b id="wave">1</b> of 3</div>
+      </div>
+      <p class="feedback" id="feedback" aria-live="polite">Pick an app card to get started</p>
+    </section>
+  </main>
+
+  <div class="overlay hidden" id="resultOverlay">
+    <div class="result-card">
+      <div class="result-kicker">✦ LEVEL SUCCESSFULLY COMPLETED ✦</div>
+      <div class="trophy">🏆</div>
+      <h2>Great Job!</h2>
+      <p>You sorted all the apps correctly.</p>
+      <div class="result-stats">
+        <div><span>⏱</span><b id="finalTime">00:00</b><small>TIME</small></div>
+        <div><span>⭐</span><b id="finalScore">0</b><small>POINTS</small></div>
+      </div>
+      <button id="playAgain">Play Again ↗</button>
+    </div>
+    <div class="confetti" id="confetti"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
